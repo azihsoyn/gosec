@@ -1,7 +1,9 @@
 package gosec_test
 
 import (
+	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/securego/gosec"
@@ -25,17 +27,15 @@ var _ = Describe("Analyzer", func() {
 	})
 
 	Context("when processing a package", func() {
-		/*
-			It("should return an error if the package contains no Go files", func() {
-				analyzer.LoadRules(rules.Generate().Builders())
-				dir, err := ioutil.TempDir("", "empty")
-				defer os.RemoveAll(dir)
-				Expect(err).ShouldNot(HaveOccurred())
-				err = analyzer.Process(buildTags, dir)
-				Expect(err).Should(HaveOccurred())
-				Expect(err.Error()).Should(MatchRegexp("no buildable Go source files"))
-			})
-		*/
+		It("should return an error if the package contains no Go files", func() {
+			analyzer.LoadRules(rules.Generate().Builders())
+			dir, err := ioutil.TempDir("", "empty")
+			defer os.RemoveAll(dir)
+			Expect(err).ShouldNot(HaveOccurred())
+			err = analyzer.Process(buildTags, dir)
+			Expect(err).Should(HaveOccurred())
+			Expect(err.Error()).Should(MatchRegexp("no buildable Go source files"))
+		})
 
 		It("should return an error if the package fails to build", func() {
 			analyzer.LoadRules(rules.Generate().Builders())
@@ -71,29 +71,27 @@ var _ = Describe("Analyzer", func() {
 			Expect(metrics.NumFiles).To(Equal(2))
 		})
 
-		/*
-			It("should be able to analyze multiple Go packages", func() {
-				analyzer.LoadRules(rules.Generate().Builders())
-				pkg1 := testutils.NewTestPackage()
-				pkg2 := testutils.NewTestPackage()
-				defer pkg1.Close()
-				defer pkg2.Close()
-				pkg1.AddFile("foo.go", `
+		It("should be able to analyze multiple Go packages", func() {
+			analyzer.LoadRules(rules.Generate().Builders())
+			pkg1 := testutils.NewTestPackage()
+			pkg2 := testutils.NewTestPackage()
+			defer pkg1.Close()
+			defer pkg2.Close()
+			pkg1.AddFile("foo.go", `
 					package main
 					func main(){
 					}`)
-				pkg2.AddFile("bar.go", `
+			pkg2.AddFile("bar.go", `
 					package main
 					func bar(){
 					}`)
-				pkg1.Build()
-				pkg2.Build()
-				err := analyzer.Process(buildTags, pkg1.Path+"/foo.go", pkg2.Path+"/bar.go")
-				Expect(err).ShouldNot(HaveOccurred())
-				_, metrics, _ := analyzer.Report()
-				Expect(metrics.NumFiles).To(Equal(2))
-			})
-		*/
+			pkg1.Build()
+			pkg2.Build()
+			err := analyzer.Process(buildTags, pkg1.Path+"/foo.go", pkg2.Path+"/bar.go")
+			Expect(err).ShouldNot(HaveOccurred())
+			_, metrics, _ := analyzer.Report()
+			Expect(metrics.NumFiles).To(Equal(2))
+		})
 
 		It("should find errors when nosec is not in use", func() {
 
@@ -112,32 +110,30 @@ var _ = Describe("Analyzer", func() {
 
 		})
 
-		/*
-			It("should report for Golang errors and invalid files", func() {
-				analyzer.LoadRules(rules.Generate().Builders())
-				pkg := testutils.NewTestPackage()
-				defer pkg.Close()
-				pkg.AddFile("foo.go", `
+		It("should report for Golang errors and invalid files", func() {
+			analyzer.LoadRules(rules.Generate().Builders())
+			pkg := testutils.NewTestPackage()
+			defer pkg.Close()
+			pkg.AddFile("foo.go", `
 					package main
 					func main()
 					}`)
-				pkg.Build()
-				err := analyzer.Process(buildTags, pkg.Path+"/foo.go")
-				Expect(err).ShouldNot(HaveOccurred())
-				_, _, golangErrors := analyzer.Report()
-				keys := make([]string, len(golangErrors))
-				i := 0
-				for key := range golangErrors {
-					keys[i] = key
-					i++
-				}
-				fileErr := golangErrors[keys[0]]
-				Expect(len(fileErr)).To(Equal(1))
-				Expect(fileErr[0].Line).To(Equal(4))
-				Expect(fileErr[0].Column).To(Equal(5))
-				Expect(fileErr[0].Err).Should(MatchRegexp(`expected declaration, found '}'`))
-			})
-		*/
+			pkg.Build()
+			err := analyzer.Process(buildTags, pkg.Path+"/foo.go")
+			Expect(err).ShouldNot(HaveOccurred())
+			_, _, golangErrors := analyzer.Report()
+			keys := make([]string, len(golangErrors))
+			i := 0
+			for key := range golangErrors {
+				keys[i] = key
+				i++
+			}
+			fileErr := golangErrors[keys[0]]
+			Expect(len(fileErr)).To(Equal(1))
+			Expect(fileErr[0].Line).To(Equal(4))
+			Expect(fileErr[0].Column).To(Equal(5))
+			Expect(fileErr[0].Err).Should(MatchRegexp(`expected declaration, found '}'`))
+		})
 
 		It("should not report errors when a nosec comment is present", func() {
 			// Rule for MD5 weak crypto usage
