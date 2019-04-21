@@ -73,7 +73,7 @@ var _ = Describe("Analyzer", func() {
 			_, metrics, _ := analyzer.Report()
 			Expect(metrics.NumFiles).To(Equal(2))
 		})
-
+*/
 		It("should be able to analyze multiple Go packages", func() {
 			analyzer.LoadRules(rules.Generate().Builders())
 			pkg1 := testutils.NewTestPackage()
@@ -81,21 +81,21 @@ var _ = Describe("Analyzer", func() {
 			defer pkg1.Close()
 			defer pkg2.Close()
 			pkg1.AddFile("foo.go", `
-					package main
-					func main(){
-					}`)
+				package main
+				func main(){
+				}`)
 			pkg2.AddFile("bar.go", `
-					package main
-					func bar(){
-					}`)
+				package main
+				func bar(){
+				}`)
 			pkg1.Build()
 			pkg2.Build()
-			err := analyzer.Process(buildTags, pkg1.Path+"/foo.go", pkg2.Path+"/bar.go")
+			err := analyzer.Process(buildTags, pkg1.Path, pkg2.Path)
 			Expect(err).ShouldNot(HaveOccurred())
 			_, metrics, _ := analyzer.Report()
 			Expect(metrics.NumFiles).To(Equal(2))
 		})
-
+/*
 		It("should find errors when nosec is not in use", func() {
 
 			// Rule for MD5 weak crypto usage

@@ -108,7 +108,7 @@ func (gosec *Analyzer) Process(buildTags []string, packagePaths ...string) error
 		Tests: false,
 	}
 
-	paths := []string{}
+	pkgs := []*packages.Package{}
 	for _, packagePath := range packagePaths {
 		abspath, err := GetPkgAbsPath(packagePath)
 		if err != nil {
@@ -123,17 +123,20 @@ func (gosec *Analyzer) Process(buildTags []string, packagePaths ...string) error
 			return err
 		}
 
+		paths := []string{}
 		for _, filename := range basePackage.GoFiles {
 			paths = append(paths, path.Join(packagePath, filename))
 		}
-	}
-	fmt.Println("packagePaths : ", paths)
+		fmt.Println("packagePaths : ", paths)
 
-	pkgs, err := packages.Load(conf, paths...)
-	if err != nil {
-		fmt.Println("err 2 : ",err)
-		return err
+		_pkgs, err := packages.Load(conf, paths...)
+		if err != nil {
+			fmt.Println("err 2 : ",err)
+			return err
+		}
+		pkgs = append(pkgs, _pkgs...)
 	}
+
 
 	fmt.Println("pkgs : ", pkgs)
 	for _, packageInfo := range pkgs {
