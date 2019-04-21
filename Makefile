@@ -10,7 +10,7 @@ default:
 	$(MAKE) build
 
 bootstrap:
-	dep ensure
+	go get ./...
 
 test: bootstrap
 	test -z '$(FMT_CMD)'

@@ -2,9 +2,15 @@ package gosec_test
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
+
+	//"io/ioutil"
+	"log"
+	//"strings"
+
+	//"os"
+	//"strings"
 
 	"github.com/securego/gosec"
 	"github.com/securego/gosec/rules"
@@ -148,7 +154,7 @@ var _ = Describe("Analyzer", func() {
 			nosecPackage.AddFile("md5.go", nosecSource)
 			nosecPackage.Build()
 
-			analyzer.Process(buildTags, nosecPackage.Path)
+			analyzer.Process(buildTags, nosecPackage.Path+"/md5.go")
 			nosecIssues, _, _ := analyzer.Report()
 			Expect(nosecIssues).Should(BeEmpty())
 		})
@@ -165,7 +171,7 @@ var _ = Describe("Analyzer", func() {
 			nosecPackage.AddFile("md5.go", nosecSource)
 			nosecPackage.Build()
 
-			analyzer.Process(buildTags, nosecPackage.Path)
+			analyzer.Process(buildTags, nosecPackage.Path+"/md5.go")
 			nosecIssues, _, _ := analyzer.Report()
 			Expect(nosecIssues).Should(BeEmpty())
 		})
@@ -217,6 +223,7 @@ var _ = Describe("Analyzer", func() {
 			Expect(err).Should(HaveOccurred())
 		})
 	})
+
 
 	It("should be possible to overwrite nosec comments, and report issues", func() {
 
