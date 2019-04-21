@@ -1,6 +1,10 @@
 package gosec_test
 
 import (
+	"io/ioutil"
+	"os"
+	"strings"
+
 	//"io/ioutil"
 	"log"
 	//"strings"
@@ -29,7 +33,7 @@ var _ = Describe("Analyzer", func() {
 	})
 
 	Context("when processing a package", func() {
-		/*
+
 		It("should return an error if the package contains no Go files", func() {
 			analyzer.LoadRules(rules.Generate().Builders())
 			dir, err := ioutil.TempDir("", "empty")
@@ -38,7 +42,7 @@ var _ = Describe("Analyzer", func() {
 			err = analyzer.Process(buildTags, dir)
 			Expect(err).Should(HaveOccurred())
 			Expect(err.Error()).Should(MatchRegexp("no buildable Go source files"))
-		})*/
+		})
 
 		It("should return an error if the package fails to build", func() {
 			analyzer.LoadRules(rules.Generate().Builders())
@@ -52,7 +56,7 @@ var _ = Describe("Analyzer", func() {
 			Expect(err.Error()).Should(MatchRegexp(`expected 'package'`))
 
 		})
-/*
+
 		It("should be able to analyze multiple Go files", func() {
 			analyzer.LoadRules(rules.Generate().Builders())
 			pkg := testutils.NewTestPackage()
@@ -68,12 +72,12 @@ var _ = Describe("Analyzer", func() {
 					println("package has two files!")
 				}`)
 			pkg.Build()
-			err := analyzer.Process(buildTags, pkg.Path+"/foo.go", pkg.Path+"/bar.go")
+			err := analyzer.Process(buildTags, pkg.Path)
 			Expect(err).ShouldNot(HaveOccurred())
 			_, metrics, _ := analyzer.Report()
 			Expect(metrics.NumFiles).To(Equal(2))
 		})
-*/
+
 		It("should be able to analyze multiple Go packages", func() {
 			analyzer.LoadRules(rules.Generate().Builders())
 			pkg1 := testutils.NewTestPackage()
@@ -95,7 +99,7 @@ var _ = Describe("Analyzer", func() {
 			_, metrics, _ := analyzer.Report()
 			Expect(metrics.NumFiles).To(Equal(2))
 		})
-/*
+
 		It("should find errors when nosec is not in use", func() {
 
 			// Rule for MD5 weak crypto usage
@@ -107,12 +111,12 @@ var _ = Describe("Analyzer", func() {
 			defer controlPackage.Close()
 			controlPackage.AddFile("md5.go", source)
 			controlPackage.Build()
-			analyzer.Process(buildTags, controlPackage.Path+"/md5.go")
+			analyzer.Process(buildTags, controlPackage.Path)
 			controlIssues, _, _ := analyzer.Report()
 			Expect(controlIssues).Should(HaveLen(sample.Errors))
 
 		})
-*/
+
 		It("should report for Golang errors and invalid files", func() {
 			analyzer.LoadRules(rules.Generate().Builders())
 			pkg := testutils.NewTestPackage()
@@ -137,7 +141,7 @@ var _ = Describe("Analyzer", func() {
 			Expect(fileErr[0].Column).To(Equal(5))
 			Expect(fileErr[0].Err).Should(MatchRegexp(`expected declaration, found '}'`))
 		})
-/*
+
 		It("should not report errors when a nosec comment is present", func() {
 			// Rule for MD5 weak crypto usage
 			sample := testutils.SampleCodeG401[0]
@@ -184,7 +188,7 @@ var _ = Describe("Analyzer", func() {
 			nosecPackage.AddFile("md5.go", nosecSource)
 			nosecPackage.Build()
 
-			analyzer.Process(buildTags, nosecPackage.Path+"/md5.go")
+			analyzer.Process(buildTags, nosecPackage.Path)
 			nosecIssues, _, _ := analyzer.Report()
 			Expect(nosecIssues).Should(HaveLen(sample.Errors))
 		})
@@ -217,10 +221,10 @@ var _ = Describe("Analyzer", func() {
 			buildTags = append(buildTags, "test")
 			err := analyzer.Process(buildTags, pkg.Path)
 			Expect(err).Should(HaveOccurred())
-		})*/
+		})
 	})
 
-	/*
+
 	It("should be possible to overwrite nosec comments, and report issues", func() {
 
 		// Rule for MD5 weak crypto usage
@@ -239,9 +243,9 @@ var _ = Describe("Analyzer", func() {
 		nosecPackage.AddFile("md5.go", nosecSource)
 		nosecPackage.Build()
 
-		customAnalyzer.Process(buildTags, nosecPackage.Path+"/md5.go")
+		customAnalyzer.Process(buildTags, nosecPackage.Path)
 		nosecIssues, _, _ := customAnalyzer.Report()
 		Expect(nosecIssues).Should(HaveLen(sample.Errors))
 
-	})*/
+	})
 })
