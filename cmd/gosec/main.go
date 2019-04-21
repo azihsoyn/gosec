@@ -303,6 +303,7 @@ func main() {
 	var packages []string
 	// Iterate over packages on the import paths
 	gopaths := gosec.Gopath()
+
 	for _, pkg := range gotool.ImportPaths(cleanPaths(flag.Args())) {
 
 		// Skip vendor directory

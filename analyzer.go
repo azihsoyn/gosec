@@ -16,7 +16,7 @@
 package gosec
 
 import (
-	"errors"
+	"fmt"
 	"go/ast"
 	"go/build"
 	"go/token"
@@ -107,8 +107,29 @@ func (gosec *Analyzer) Process(buildTags []string, packagePaths ...string) error
 		Tests: false,
 	}
 
+	for _, packagePath := range packagePaths {
+		abspath, err := GetPkgAbsPath(packagePath)
+		if err != nil {
+			gosec.logger.Printf("Skipping: %s. Path doesn't exist.", abspath)
+			continue
+		}
+		gosec.logger.Println("Searching directory:", abspath)
+
+		basePackage, err := build.Default.ImportDir(packagePath, build.ImportComment)
+		if err != nil {
+			fmt.Println("err0 : ",err)
+			return err
+		}
+
+		for _, filename := range basePackage.GoFiles {
+			packagePaths = append(packagePaths, path.Join(packagePath, filename))
+		}
+	}
+	fmt.Println("packagePaths : ", packagePaths)
+
 	pkgs, err := packages.Load(conf, packagePaths...)
 	if err != nil {
+		fmt.Println("err 2 : ",err)
 		return err
 	}
 
@@ -133,9 +154,6 @@ func (gosec *Analyzer) Process(buildTags []string, packagePaths ...string) error
 		}
 	}
 
-	if gosec.stats.NumFiles == 0 {
-		return errors.New("no buildable Go source files")
-	}
 	return nil
 }
 
