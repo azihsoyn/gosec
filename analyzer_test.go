@@ -3,6 +3,8 @@ package gosec_test
 import (
 	//"io/ioutil"
 	"log"
+	//"strings"
+
 	//"os"
 	//"strings"
 
@@ -110,17 +112,17 @@ var _ = Describe("Analyzer", func() {
 			Expect(controlIssues).Should(HaveLen(sample.Errors))
 
 		})
-
+*/
 		It("should report for Golang errors and invalid files", func() {
 			analyzer.LoadRules(rules.Generate().Builders())
 			pkg := testutils.NewTestPackage()
 			defer pkg.Close()
 			pkg.AddFile("foo.go", `
-					package main
-					func main()
-					}`)
+				package main
+				func main()
+				}`)
 			pkg.Build()
-			err := analyzer.Process(buildTags, pkg.Path+"/foo.go")
+			err := analyzer.Process(buildTags, pkg.Path)
 			Expect(err).ShouldNot(HaveOccurred())
 			_, _, golangErrors := analyzer.Report()
 			keys := make([]string, len(golangErrors))
@@ -135,7 +137,7 @@ var _ = Describe("Analyzer", func() {
 			Expect(fileErr[0].Column).To(Equal(5))
 			Expect(fileErr[0].Err).Should(MatchRegexp(`expected declaration, found '}'`))
 		})
-
+/*
 		It("should not report errors when a nosec comment is present", func() {
 			// Rule for MD5 weak crypto usage
 			sample := testutils.SampleCodeG401[0]

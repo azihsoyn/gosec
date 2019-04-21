@@ -26,6 +26,7 @@ import (
 	"path"
 	"reflect"
 	"regexp"
+	"strconv"
 
 	"strings"
 
@@ -107,6 +108,7 @@ func (gosec *Analyzer) Process(buildTags []string, packagePaths ...string) error
 		Tests: false,
 	}
 
+	paths := []string{}
 	for _, packagePath := range packagePaths {
 		abspath, err := GetPkgAbsPath(packagePath)
 		if err != nil {
@@ -122,15 +124,49 @@ func (gosec *Analyzer) Process(buildTags []string, packagePaths ...string) error
 		}
 
 		for _, filename := range basePackage.GoFiles {
-			packagePaths = append(packagePaths, path.Join(packagePath, filename))
+			paths = append(paths, path.Join(packagePath, filename))
 		}
 	}
-	fmt.Println("packagePaths : ", packagePaths)
+	fmt.Println("packagePaths : ", paths)
 
-	pkgs, err := packages.Load(conf, packagePaths...)
+	pkgs, err := packages.Load(conf, paths...)
 	if err != nil {
 		fmt.Println("err 2 : ",err)
 		return err
+	}
+
+	fmt.Println("pkgs : ", pkgs)
+	for _, packageInfo := range pkgs {
+		fmt.Println("packageInfo.Errors : ", packageInfo.Errors)
+		if len(packageInfo.Errors) != 0 {
+			for _, packErr := range packageInfo.Errors {
+				fmt.Println("packErr : ", packErr)
+				// infoErr contains information about the error
+				// at index 0 is the file path
+				// at index 1 is the line; index 2 is for column
+				// at index 3 is the actual error
+				infoErr := strings.Split(packErr.Error(), ":")
+				filePath := infoErr[0]
+				line, err := strconv.Atoi(infoErr[1])
+				if err != nil {
+					fmt.Println("err2 : ", err)
+					return err
+				}
+				column, err := strconv.Atoi(infoErr[2])
+				if err != nil {
+					fmt.Println("err3 : ", err)
+					return err
+				}
+				newErr := NewError(line, column, strings.TrimSpace(infoErr[3]))
+
+				if errSlice, ok := gosec.errors[filePath]; ok {
+					gosec.errors[filePath] = append(errSlice, *newErr)
+				} else {
+					errSlice = make([]Error, 0)
+					gosec.errors[filePath] = append(errSlice, *newErr)
+				}
+			}
+		}
 	}
 
 	sortErrors(gosec.errors) // sorts errors by line and column in the file
